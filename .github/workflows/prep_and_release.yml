@@ -1,0 +1,40 @@
+name: prep_and_release
+
+on:
+  schedule:
+  - cron: "0 0 * * *"
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  prepare_and_release:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Prepare ENV vars
+      run: echo "RELEASE=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
+    - name: Build the project
+      run: cargo build --verbose
+    - name: Run tests
+      run: cargo test --verbose
+    - name: Generate the output
+      run: cargo run
+    - name: Create new release
+      uses: actions/create-release@v1
+      id: create_release
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ env.RELEASE }}
+        release_name: Release ${{ env.RELEASE }}
+    - name: Upload JSON output file to the release
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./output.json
+        asset_name: output.json
+        asset_content_type: application/json
