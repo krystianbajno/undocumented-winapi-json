@@ -8,13 +8,13 @@ use std::collections::HashMap;
 #[derive(Serialize)]
 struct Module {
     module_name: String,
-    phnt_link: String,
     functions: Vec<Function>,
 }
 
 #[derive(Serialize)]
 struct Function {
     function_name: String,
+    function_link: String,
     ret_type: String,
     params: Vec<String>,
 }
@@ -24,13 +24,14 @@ fn download_file(url: &str) -> Result<String, reqwest::Error> {
     Ok(response.text()?)
 }
 
-fn parse_function_definitions(content: &str) -> Vec<Function> {
+fn parse_function_definitions(content: &str, file_link: &str) -> Vec<Function> {
     let mut functions = Vec::new();
     
     let re = Regex::new(r"NTSYSAPI\s+(?P<ret_type>\w[\w\s\*]+)\s+NTAPI\s+(?P<name>\w+)\s*\((?P<params>[^)]*)\)").unwrap();
     
     for cap in re.captures_iter(content) {
         let ret_type = cap["ret_type"].trim().to_string();
+        let function_link = file_link.to_string();
         let function_name = cap["name"].to_string();
         let params = cap["params"]
             .split(',')
@@ -41,6 +42,7 @@ fn parse_function_definitions(content: &str) -> Vec<Function> {
             function_name,
             ret_type,
             params,
+            function_link
         });
     }
     
@@ -64,17 +66,16 @@ fn main() {
 
     for file_name in files {
         let file_url = format!("{}{}", base_url, file_name);
-        let phnt_link = format!("{}{}", phnt_base_link, file_name);
+        let file_link = format!("{}{}", phnt_base_link, file_name);
         
         match download_file(&file_url) {
             Ok(content) => {
                 let module_name = "ntdll.dll".to_string();
-                let functions = parse_function_definitions(&content);
+                let functions = parse_function_definitions(&content, &file_link);
 
                 if !functions.is_empty() {
                     let module = modules.entry(module_name.clone()).or_insert(Module {
                         module_name,
-                        phnt_link: phnt_link.clone(),
                         functions: Vec::new(),
                     });
 
