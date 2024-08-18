@@ -1,4 +1,4 @@
-# phnt-winapi-json
+# undocumented-winapi-json
 Undocumented WinAPI collector.
 
 - Collecting `ntdll.dll` functions from [PHNT](https://github.com/winsiderss/phnt) repository. 
