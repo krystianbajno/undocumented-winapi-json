@@ -28,7 +28,7 @@ jobs:
       run: cargo run
 
     - name: Download latest release output.json
-      run: curl -L -o latest_output.json https://github.com/krystianbajno/phnt-winapi-json/releases/latest/download/output.json
+      run: curl -L -o latest_output.json https://github.com/krystianbajno/undocumented-winapi-json/releases/latest/download/output.json
 
     - name: Calculate MD5 of generated output.json
       id: md5_local
