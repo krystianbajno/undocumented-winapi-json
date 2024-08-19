@@ -2,17 +2,18 @@ use std::{collections::HashMap, fs, path::Path};
 use regex::Regex;
 use crate::models::{function::Function, module::Module};
 
-pub fn parse_function_definitions(content: &str, file_link: &str) -> Vec<Function> {
-    parse_definitions(content, file_link, r"NTSYSAPI\s+(?P<ret_type>\w[\w\s\*]+)\s+NTAPI\s+(?P<name>\w+)\s*\((?P<params>[^)]*)\)")
+pub fn parse_ntoskrnl_syscalls_and_ntapi(content: &str, file_link: &str) -> Vec<Function> {
+    parse_definitions(content, file_link, r"(?:NTSYSCALLAPI|NTSYSAPI)\s+(?P<ret_type>\w[\w\s\*]+)\s+(?:NTAPI|WINAPI)\s+(?P<name>\w+)\s*\((?P<params>[^)]*)\)")
 }
 
-pub fn parse_syscall_definitions(content: &str, file_link: &str) -> Vec<Function> {
-    parse_definitions(content, file_link, r"NTSYSCALLAPI\s+(?P<ret_type>\w[\w\s\*]+)\s+NTAPI\s+(?P<name>\w+)\s*\((?P<params>[^)]*)\)")
+pub fn parse_win32k_syscalls_and_functions(content: &str, file_link: &str) -> Vec<Function> {
+    parse_definitions(content, file_link, r"(?:W32KAPI)\s+(?P<ret_type>\w[\w\s\*]+)\s+(?:NTAPI|WINAPI|__kernel_entry|APIENTRY)\s+(?P<name>\w+)\s*\((?P<params>[^)]*)\)")
 }
 
-pub fn parse_w32k_definitions(content: &str, file_link: &str) -> Vec<Function> {
-    parse_definitions(content, file_link, r"W32KAPI\s+(?P<ret_type>\w[\w\s\*]+)\s+NTAPI\s+(?P<name>\w+)\s*\((?P<params>[^)]*)\)")
+pub fn parse_hidden_ntapi_and_winapi(content: &str, file_link: &str) -> Vec<Function> {
+    parse_definitions(content, file_link, r"(?:NTSYSAPI|NTAPI|WINAPI|__stdcall|__fastcall)\s+(?P<ret_type>\w[\w\s\*]+)\s+(?P<name>Nt\w+|Zw\w+)\s*\((?P<params>[^)]*)\)")
 }
+
 
 pub fn process_files_in_directory(
     dir: &Path, 
@@ -39,11 +40,11 @@ pub fn process_files_in_directory(
                 let relative_path = path.strip_prefix(root_dir).unwrap();
                 let file_link = format!("{}/{}", base_url.trim_end_matches('/'), relative_path.display());
 
-                let functions = parse_function_definitions(&content, &file_link);
-                let syscalls = parse_syscall_definitions(&content, &file_link);
-                let w32k = parse_w32k_definitions(&content, &file_link);
-           
-                if !functions.is_empty() {
+                let ntoskrnl_functions = parse_ntoskrnl_syscalls_and_ntapi(&content, &file_link);
+                let win32k_functions = parse_win32k_syscalls_and_functions(&content, &file_link);
+                let winapi_functions = parse_hidden_ntapi_and_winapi(&content, &file_link);
+
+                if !ntoskrnl_functions.is_empty() || !winapi_functions.is_empty() {
                     let module_name = "ntdll.dll".to_string();
 
                     let module = modules.entry(module_name.clone()).or_insert(Module {
@@ -51,21 +52,11 @@ pub fn process_files_in_directory(
                         functions: Vec::new(),
                     });
 
-                    module.functions.extend(functions);
+                    module.functions.extend(ntoskrnl_functions);
+                    module.functions.extend(winapi_functions);
                 }
 
-                if !syscalls.is_empty() {
-                    let module_name = "ntdll.dll".to_string();
-
-                    let module = modules.entry(module_name.clone()).or_insert(Module {
-                        module_name,
-                        functions: Vec::new(),
-                    });
-
-                    module.functions.extend(syscalls);
-                }
-
-                if !w32k.is_empty() {
+                if !win32k_functions.is_empty() {
                     let module_name = "win32k.sys".to_string();
 
                     let module = modules.entry(module_name.clone()).or_insert(Module {
@@ -73,7 +64,7 @@ pub fn process_files_in_directory(
                         functions: Vec::new(),
                     });
 
-                    module.functions.extend(w32k);
+                    module.functions.extend(win32k_functions);
                 }
             }
         }
