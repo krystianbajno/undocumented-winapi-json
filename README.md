@@ -1,4 +1,4 @@
-# phnt-winapi-json
+# undocumented-winapi-json
 Undocumented WinAPI collector.
 - Collecting documented dll's from Artideusz's [winapi-to-json](https://github.com/Artideusz/winapi_to_json).
 
