@@ -16,6 +16,7 @@ pub fn parse_w32k_definitions(content: &str, file_link: &str) -> Vec<Function> {
 }
 
 pub fn process_files_in_directory(
+    base_dir: &Path,
     dir: &Path, 
     base_url: &str, 
     modules: &mut HashMap<String, Module>, 
@@ -25,7 +26,7 @@ pub fn process_files_in_directory(
             let entry = entry.expect("Failed to read entry");
             let path = entry.path();
             if path.is_dir() {
-                process_files_in_directory(&path, base_url, modules);
+                process_files_in_directory(&base_dir,&path, base_url, modules);
             } else if path.extension().map(|ext| ext == "h" || ext == "c").unwrap_or(false) {
                 println!("{:?}", path.as_os_str());
                 let content = match fs::read(&path) {
@@ -36,7 +37,7 @@ pub fn process_files_in_directory(
                     }
                 };
 
-                let relative_path = path.strip_prefix(dir).unwrap();
+                let relative_path = path.strip_prefix(base_dir).unwrap();
                 let file_link = format!("{}/{}", base_url, relative_path.display());
 
                 let functions = parse_function_definitions(&content, &file_link);
