@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 use std::path::Path;
-use std::sync::Arc;
 
 use crate::models::module::Module;
 use crate::processing::extract::process_files_in_directory;
@@ -18,10 +17,7 @@ pub fn collect() -> Result<HashMap<String, Module>, Box<dyn std::error::Error>> 
 
     let reactos_base_link = "https://github.com/reactos/reactos/blob/master/";
 
-
-    let module_name_closure: Arc<Box<dyn Fn(&Path) -> String>> = Arc::new(Box::new(|_| "ntdll.dll".to_string()));
-
-    process_files_in_directory(&output_dir, reactos_base_link, &mut modules, module_name_closure);
+    process_files_in_directory(&output_dir, reactos_base_link, &mut modules);
 
     Ok(modules)
 }
