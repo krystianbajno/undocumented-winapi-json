@@ -14,12 +14,12 @@ pub fn collect() -> Result<HashMap<String, Module>, Box<dyn std::error::Error>> 
     let mut modules_map = HashMap::new();
     for json_module in json_modules {
         let functions = json_module.functions.into_iter().map(|json_function| {
-
             Function {
                 function_name: json_function.function_name,
                 function_link: String::new(),
                 ret_type: json_function.ret_type,
                 params: json_function.params,
+                syscalls: Vec::new()
             }
         }).collect();
 

@@ -23,11 +23,39 @@ pub fn parse_function_definitions(content: &str, file_link: &str) -> Vec<Functio
             ret_type,
             params,
             function_link,
+            syscalls: Vec::new()
         });
     }
     
     functions
 }
+
+pub fn parse_syscall_definitions(content: &str, file_link: &str) -> Vec<Function> {
+    let mut syscalls = Vec::new();
+    
+    let re = Regex::new(r"NTSYSCALLAPI\s+(?P<ret_type>\w[\w\s\*]+)\s+NTAPI\s+(?P<name>\w+)\s*\((?P<params>[^)]*)\)").unwrap();
+    
+    for cap in re.captures_iter(content) {
+        let ret_type = cap["ret_type"].trim().to_string();
+        let function_link = file_link.to_string();
+        let function_name = cap["name"].to_string();
+        let params = cap["params"]
+            .split(',')
+            .map(|p| p.trim().to_string())
+            .collect::<Vec<String>>();
+
+        syscalls.push(Function {
+            function_name,
+            ret_type,
+            params,
+            function_link,
+            syscalls: Vec::new()
+        });
+    }
+    
+    syscalls
+}
+
 
 pub fn process_files_in_directory(
     dir: &Path, 
@@ -55,6 +83,8 @@ pub fn process_files_in_directory(
                 let file_link = format!("{}/{}", base_url, relative_path.display());
 
                 let functions = parse_function_definitions(&content, &file_link);
+                let syscalls = parse_syscall_definitions(&content, &file_link);
+
 
                 if !functions.is_empty() {
                     let module_name = get_module_name(&path);
@@ -65,6 +95,7 @@ pub fn process_files_in_directory(
                     });
 
                     module.functions.extend(functions);
+                    module.functions.extend(syscalls);
                 }
             }
         }
