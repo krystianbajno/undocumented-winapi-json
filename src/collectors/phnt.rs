@@ -17,7 +17,9 @@ pub fn collect() -> Result<HashMap<String, Module>, Box<dyn std::error::Error>> 
 
     let phnt_base_link = "https://github.com/winsiderss/phnt/blob/master/";
 
-    process_files_in_directory(&output_dir, phnt_base_link, &mut modules, &output_dir);
+    let root_dir = output_dir.join("phnt-master");
+
+    process_files_in_directory(&output_dir, phnt_base_link, &mut modules, &root_dir);
 
     Ok(modules)
 }

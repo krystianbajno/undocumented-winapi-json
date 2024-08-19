@@ -18,7 +18,9 @@ pub fn collect() -> Result<HashMap<String, Module>, Box<dyn std::error::Error>> 
 
     let reactos_base_link = "https://github.com/reactos/reactos/blob/master/";
 
-    process_files_in_directory(&output_dir, reactos_base_link, &mut modules, &output_dir);
+    let root_dir = output_dir.join("reactos-master");
+
+    process_files_in_directory(&root_dir, reactos_base_link, &mut modules, &root_dir);
 
     Ok(modules)
 }
