@@ -16,7 +16,7 @@ pub fn fetch_syscalls() -> Result<HashMap<String, Vec<Syscall>>, Box<dyn Error>>
     let mut syscall_data = HashMap::new();
 
     for &(arch, module, url) in SYSCALLS_URLS.iter() {
-              let response = blocking::get(url)?;
+        let response = blocking::get(url)?;
         let json: Value = response.json()?;
 
         if let Value::Object(obj) = json {
@@ -41,7 +41,10 @@ pub fn fetch_syscalls() -> Result<HashMap<String, Vec<Syscall>>, Box<dyn Error>>
                     }
                 }
 
-                syscall_data.entry(function_name.clone()).or_insert_with(Vec::new).extend(syscalls_list);
+                syscall_data
+                    .entry(function_name.clone())
+                    .or_insert_with(Vec::new)
+                    .extend(syscalls_list);
             }
         }
     }
