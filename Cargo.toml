@@ -1,11 +1,12 @@
 [package]
-name = "phnt-winapi-json"
+name = "undocumented-winapi-json"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-reqwest = { version = "0.12", features=["blocking"] }
+reqwest = { version = "0.12", features=["blocking", "json"] }
 serde_json = "1.0"
 serde = "1.0"
 serde_derive = "1.0"
 regex = "1.10"
+zip = "2.1.6"
