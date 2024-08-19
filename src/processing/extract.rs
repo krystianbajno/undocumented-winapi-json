@@ -2,7 +2,6 @@ use std::{collections::HashMap, fs, path::Path};
 use regex::Regex;
 use crate::models::{function::Function, module::Module};
 
-
 pub fn parse_function_definitions(content: &str, file_link: &str) -> Vec<Function> {
     parse_definitions(content, file_link, r"NTSYSAPI\s+(?P<ret_type>\w[\w\s\*]+)\s+NTAPI\s+(?P<name>\w+)\s*\((?P<params>[^)]*)\)")
 }
@@ -16,17 +15,17 @@ pub fn parse_w32k_definitions(content: &str, file_link: &str) -> Vec<Function> {
 }
 
 pub fn process_files_in_directory(
-    base_dir: &Path,
     dir: &Path, 
     base_url: &str, 
-    modules: &mut HashMap<String, Module>, 
+    modules: &mut HashMap<String, Module>,
+    base_dir: &Path,
 ) {
     if dir.is_dir() {
         for entry in fs::read_dir(dir).expect("Directory not found") {
             let entry = entry.expect("Failed to read entry");
             let path = entry.path();
             if path.is_dir() {
-                process_files_in_directory(&base_dir,&path, base_url, modules);
+                process_files_in_directory(&path, base_url, modules, base_dir);
             } else if path.extension().map(|ext| ext == "h" || ext == "c").unwrap_or(false) {
                 println!("{:?}", path.as_os_str());
                 let content = match fs::read(&path) {
@@ -38,7 +37,7 @@ pub fn process_files_in_directory(
                 };
 
                 let relative_path = path.strip_prefix(base_dir).unwrap();
-                let file_link = format!("{}/{}", base_url, relative_path.display());
+                let file_link = format!("{}/{}", base_url.trim_end_matches('/'), relative_path.display());
 
                 let functions = parse_function_definitions(&content, &file_link);
                 let syscalls = parse_syscall_definitions(&content, &file_link);
@@ -66,7 +65,7 @@ pub fn process_files_in_directory(
                     module.functions.extend(syscalls);
                 }
 
-                if !w32k.is_empty() {
+                if (!w32k.is_empty()) {
                     let module_name = "win32k.sys".to_string();
 
                     let module = modules.entry(module_name.clone()).or_insert(Module {

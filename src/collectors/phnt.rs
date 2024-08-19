@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-use std::env;
 use std::path::Path;
 
 use crate::models::module::Module;
@@ -8,7 +7,6 @@ use crate::processing::repository::download_and_extract_zip;
 
 pub fn collect() -> Result<HashMap<String, Module>, Box<dyn std::error::Error>> {
     let zip_url = "https://github.com/winsiderss/phnt/archive/refs/heads/master.zip";
-    let base_dir = env::current_dir()?;
     let output_dir = Path::new("phnt-master");
     let mut modules = HashMap::new();
 
@@ -19,8 +17,7 @@ pub fn collect() -> Result<HashMap<String, Module>, Box<dyn std::error::Error>> 
 
     let phnt_base_link = "https://github.com/winsiderss/phnt/blob/master/";
 
-
-    process_files_in_directory(&output_dir, base_dir.as_path(), phnt_base_link, &mut modules);
+    process_files_in_directory(&output_dir, phnt_base_link, &mut modules, &output_dir);
 
     Ok(modules)
 }
