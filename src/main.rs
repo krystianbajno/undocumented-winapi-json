@@ -19,7 +19,6 @@ fn main() {
 
     let output_data = OutputData {
         modules: merged_modules.values().cloned().collect(),
-        syscalls,
     };
 
     let output_file = "output.json";
