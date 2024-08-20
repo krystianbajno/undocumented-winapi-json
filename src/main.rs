@@ -12,8 +12,8 @@ fn main() {
     let reactos_modules = reactos::collect().unwrap();
     let syscalls = fetch_syscalls().unwrap();
 
-    let mut merged_modules = merge_modules(winapi_to_json, phnt_modules);
-    merged_modules = merge_modules(merged_modules, reactos_modules);
+    let mut merged_modules = merge_modules(reactos_modules, phnt_modules);
+    merged_modules = merge_modules(merged_modules, winapi_to_json);
     
     integrate_syscalls_into_modules(&mut merged_modules, syscalls.clone());
 
