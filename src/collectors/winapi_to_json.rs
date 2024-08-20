@@ -16,7 +16,7 @@ pub fn collect() -> Result<HashMap<String, Module>, Box<dyn std::error::Error>> 
         let functions = json_module.functions.into_iter().map(|json_function| {
             Function {
                 function_name: json_function.function_name,
-                function_link: String::from("/api/ms"),
+                function_link: String::from("https://github.com/microsoft/windows-rs/tree/master/crates/libs/bindgen/default"),
                 ret_type: json_function.ret_type,
                 params: json_function.params,
                 syscalls: Vec::new()
